@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Check Scammer</title>
+
+<style>
+
+/* ===== SAME STYLE (NO CHANGE) ===== */
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Segoe UI;
+}
+
+body{
+    background:radial-gradient(circle at top,#1c1c1c,#090909);
+    color:white;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:flex-start;
+    padding:30px 15px;
+}
+
+.card{
+    width:100%;
+    max-width:430px;
+    background:rgba(255,255,255,0.04);
+    border-radius:32px;
+    padding:22px;
+    backdrop-filter:blur(12px);
+    box-shadow:0 10px 40px rgba(0,0,0,.7);
+}
+
+.selamatDatang{
+    text-align:center;
+    padding:18px;
+    margin-bottom:18px;
+    border-radius:18px;
+    background:linear-gradient(135deg,rgba(255,215,0,.15),rgba(255,255,255,.03));
+    border:1px solid rgba(255,215,0,.25);
+    color:#ffd86b;
+    font-size:24px;
+    font-weight:bold;
+}
+
+.introBox{
+    padding:18px;
+    border-radius:22px;
+    background:linear-gradient(135deg,rgba(255,255,255,.06),rgba(255,255,255,.02));
+    border:1px solid rgba(255,255,255,.08);
+    text-align:center;
+    line-height:1.8;
+}
+
+h2{
+    text-align:center;
+    font-size:26px;
+    margin-top:28px;
+    margin-bottom:18px;
+    font-family:Georgia;
+}
+
+input{
+    width:100%;
+    height:60px;
+    border:none;
+    outline:none;
+    border-radius:18px;
+    padding:0 22px;
+    margin-top:16px;
+    background:linear-gradient(90deg,#232323,#1a1a1a);
+    color:white;
+    font-size:16px;
+}
+
+button{
+    width:100%;
+    border:none;
+    cursor:pointer;
+    height:58px;
+    border-radius:18px;
+    font-size:18px;
+    font-weight:700;
+    margin-top:16px;
+    transition:.25s;
+}
+
+button:hover{transform:scale(1.02);}
+
+.check{background:linear-gradient(90deg,#ff2424,#ff6b6b);color:white;}
+.report{background:linear-gradient(90deg,#ffb700,#ff8400);color:black;}
+
+.result{
+    margin-top:18px;
+    background:#050505;
+    border-radius:18px;
+    padding:24px;
+    text-align:center;
+    font-size:20px;
+}
+
+/* 🔥 NEW BOX */
+.noticeBox{
+    margin-top:14px;
+    padding:14px;
+    border-radius:14px;
+    text-align:center;
+    font-size:13px;
+    font-weight:600;
+    color:#ffd86b;
+    background:linear-gradient(135deg,rgba(255,215,0,.10),rgba(255,255,255,.03));
+    border:1px solid rgba(255,215,0,.25);
+}
+
+.panel{display:none;margin-top:18px;padding:16px;border-radius:18px;background:rgba(255,255,255,.04);}
+
+.row{display:flex;gap:10px;margin-top:14px;}
+
+.mini{flex:1;background:#2f2f2f;color:white;}
+.owner{flex:1;background:linear-gradient(90deg,#ffd700,#ffae00);color:black;}
+
+.listBox{
+    margin-top:14px;
+    background:rgba(0,0,0,.35);
+    border-radius:14px;
+    padding:14px;
+    max-height:170px;
+    overflow:auto;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+<div class="selamatDatang">WELCOME</div>
+
+<div class="introBox">
+🛡️ SCAMMER VERIFICATION SYSTEM
+</div>
+
+<h2>CHECK NUMBER SCAMMERS</h2>
+
+<input id="num" placeholder="Masukkan nombor telefon">
+
+<button class="check" onclick="checkNum()">CHECK SCAMMER</button>
+<button class="report" onclick="toggleReport()">REPORT SCAMMER</button>
+
+<div class="result" id="result">
+System ready...
+</div>
+
+<!-- 🔥 NEW BOX (OUTSIDE RESULT) -->
+<div class="noticeBox">
+KEGUNAAN OWNER DAN ADMIN SAHAJA
+</div>
+
+<!-- LOGIN -->
+<input id="username" placeholder="Username admin / owner">
+
+<div class="row">
+<button class="mini" onclick="loginAdmin()">ADMIN</button>
+<button class="owner" onclick="loginOwner()">OWNER</button>
+</div>
+
+<div class="panel" id="panel">
+
+<input id="addNum" placeholder="Tambah scammer number">
+<button class="check" onclick="addScammer()">ADD SCAMMER</button>
+
+<input id="delNum" placeholder="Buang scammer number">
+<button class="check" onclick="deleteScammer()">DELETE SCAMMER</button>
+
+<hr style="margin:15px 0;opacity:.2;">
+
+<input id="newAdmin" placeholder="Tambah admin username">
+<button class="check" onclick="addAdmin()">ADD ADMIN</button>
+
+<input id="delAdmin" placeholder="Buang admin username">
+<button class="check" onclick="deleteAdmin()">DELETE ADMIN</button>
+
+<div class="listBox">
+<b>📋 Admin List:</b>
+<div id="adminList"></div>
+</div>
+
+<div class="listBox">
+<b>📋 Scammer List:</b>
+<div id="list"></div>
+</div>
+
+<button onclick="logout()" style="background:#444;color:white;margin-top:14px;">LOG OUT</button>
+
+</div>
+
+<div style="text-align:center;margin-top:20px;font-size:12px;color:#888;">
+Created By YamieyReseller
+</div>
+
+</div>
+
+<script>
+
+/* ===== SAME JS (NO CHANGE) ===== */
+
+const ownerUser="owner";
+let adminUsers=["admin1","admin2"];
+let role="user";
+
+let db=JSON.parse(localStorage.getItem("db")) || {
+"0135413028":true,
+"01171136005":true
+};
+
+function show(msg,color){
+document.getElementById("result").innerHTML=msg;
+document.getElementById("result").style.color=color;
+}
+
+function loginAdmin(){
+let user=document.getElementById("username").value.trim();
+
+if(adminUsers.includes(user)){
+role="admin";
+document.getElementById("panel").style.display="block";
+renderAdmins();
+renderScammerList();
+show("ADMIN MODE ACTIVE","#ffd700");
+}else{
+show("ACCESS DENIED","#ff3b3b");
+}
+
+document.getElementById("username").value="";
+}
+
+function loginOwner(){
+let user=document.getElementById("username").value.trim();
+
+if(user==ownerUser){
+role="owner";
+document.getElementById("panel").style.display="block";
+renderAdmins();
+renderScammerList();
+show("OWNER MODE ACTIVE","#ffd700");
+}else{
+show("WRONG OWNER","#ff3b3b");
+}
+
+document.getElementById("username").value="";
+}
+
+function renderAdmins(){
+let box=document.getElementById("adminList");
+box.innerHTML="";
+
+if(role!="owner"){
+box.innerHTML="🔒 Hanya OWNER boleh lihat admin";
+return;
+}
+
+adminUsers.forEach(a=>{
+box.innerHTML+=`<div>👤 ${a}</div>`;
+});
+}
+
+function renderScammerList(){
+let box=document.getElementById("list");
+box.innerHTML="";
+
+Object.keys(db).forEach(n=>{
+box.innerHTML+=`<div>📞 ${n}</div>`;
+});
+}
+
+function checkNum(){
+let num=document.getElementById("num").value.replace(/[^0-9]/g,'');
+if(!num)return;
+
+db[num]
+? show("🚨 SCAMMER DETECTED","#ff3b3b")
+: show("✅ NOT A SCAMMER","#00ff99");
+
+document.getElementById("num").value="";
+}
+
+function addScammer(){
+let n=document.getElementById("addNum").value.replace(/[^0-9]/g,'');
+if(!n)return;
+
+db[n]=true;
+localStorage.setItem("db",JSON.stringify(db));
+
+renderScammerList();
+show("ADDED","#00ff99");
+
+document.getElementById("addNum").value="";
+}
+
+function deleteScammer(){
+
+if(role!="owner"){
+show("ONLY OWNER CAN DELETE SCAMMER","#ff3b3b");
+return;
+}
+
+let n=document.getElementById("delNum").value.replace(/[^0-9]/g,'');
+
+if(db[n]){
+delete db[n];
+localStorage.setItem("db",JSON.stringify(db));
+
+renderScammerList();
+show("DELETED","#ffb300");
+}else{
+show("NOT FOUND","#ff3b3b");
+}
+
+document.getElementById("delNum").value="";
+}
+
+function addAdmin(){
+if(role!="owner")return;
+
+let u=document.getElementById("newAdmin").value.trim();
+if(!u)return;
+
+if(!adminUsers.includes(u)){
+adminUsers.push(u);
+renderAdmins();
+show("ADMIN ADDED","#00ff99");
+}
+
+document.getElementById("newAdmin").value="";
+}
+
+function deleteAdmin(){
+if(role!="owner")return;
+
+let u=document.getElementById("delAdmin").value.trim();
+let i=adminUsers.indexOf(u);
+
+if(i!=-1){
+adminUsers.splice(i,1);
+renderAdmins();
+show("ADMIN DELETED","#ffb300");
+}
+
+document.getElementById("delAdmin").value="";
+}
+
+function logout(){
+role="user";
+document.getElementById("panel").style.display="none";
+show("LOGOUT SUCCESS","#fff");
+}
+
+</script>
+
+</body>
+</html>
